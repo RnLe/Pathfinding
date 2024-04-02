@@ -54,6 +54,7 @@ async def main():
     # Main loop
     ############################
     running = True
+    fps = 100
 
     while running:
         for event in pygame.event.get():
@@ -80,7 +81,7 @@ async def main():
         
         pathingGrid.draw(screen)
         pygame.display.flip()
-        await asyncio.sleep(0)
+        await asyncio.sleep(1/fps)
 
     
     # Quit pygame

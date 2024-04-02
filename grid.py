@@ -27,6 +27,31 @@ class Grid:
         
         self.screen = screen
         
+        # pre-defined colors for the grid cells
+        # 0: white (empty cell), 1: black (wall cell), 2: green (path cell), 3: yellow (checked cell), 4: blue (start cell), 5: red (end cell)
+        self.colors = ((255, 255, 255), (0, 0, 0), (0, 255, 0), (255, 255, 0), (0, 0, 255), (255, 0, 0))
+        
+        # Pre-define surfaces for grid cells
+        self.cellSize = (self.cell_width, self.cell_height)
+        
+        self.emptyCell = pygame.Surface(self.cellSize)
+        self.emptyCell.fill(self.colors[0])
+        self.wallCell = pygame.Surface(self.cellSize)
+        self.wallCell.fill(self.colors[1])
+        self.pathCell = pygame.Surface(self.cellSize)
+        self.pathCell.fill(self.colors[2])
+        self.checkedCell = pygame.Surface(self.cellSize)
+        self.checkedCell.fill(self.colors[3])
+        self.startCell = pygame.Surface(self.cellSize)
+        self.startCell.fill(self.colors[4])
+        self.endCell = pygame.Surface(self.cellSize)
+        self.endCell.fill(self.colors[5])
+        
+        self.hLine = pygame.Surface((self.width, 1))
+        self.hLine.fill((200, 200, 200))
+        self.vLine = pygame.Surface((1, self.height))
+        self.vLine.fill((200, 200, 200))
+        
     def set_start(self, pos):
         self.start = pos
     
@@ -34,28 +59,35 @@ class Grid:
         self.end = pos
 
     def draw(self, surface):
-        # pre-defined colors for the grid cells
-        # 0: white (empty cell), 1: black (wall cell), 2: green (path cell), 3: yellow (checked cell)
-        colors = ((255, 255, 255), (0, 0, 0), (0, 255, 0), (255, 255, 0))
+       
         for i in range(self.rows):
             for j in range(self.cols):
-                pygame.draw.rect(surface, colors[self.cells[i][j]], (self.x + j * self.cell_width, self.y + i * self.cell_height, self.cell_width, self.cell_height))
+                # Determine position of cell
+                cell_position = (j * self.cell_width, i * self.cell_height)
+                
+                if self.cells[i][j] == 0:
+                    surface.blit(self.emptyCell, (self.x + cell_position[0], self.y + cell_position[1]))
+                elif self.cells[i][j] == 1:
+                    surface.blit(self.wallCell, (self.x + cell_position[0], self.y + cell_position[1]))
+                elif self.cells[i][j] == 2:
+                    surface.blit(self.pathCell, (self.x + cell_position[0], self.y + cell_position[1]))
+                elif self.cells[i][j] == 3:
+                    surface.blit(self.checkedCell, (self.x + cell_position[0], self.y + cell_position[1]))
+                
         # Draw fine grid lines for the grid
         for i in range(self.rows + 1):
-            pygame.draw.line(surface, (200, 200, 200), (self.x, self.y + i * self.cell_height), (self.x + self.width, self.y + i * self.cell_height))
+            surface.blit(self.hLine, (self.x, self.y + i * self.cell_height))
         for j in range(self.cols + 1):
-            pygame.draw.line(surface, (200, 200, 200), (self.x + j * self.cell_width, self.y), (self.x + j * self.cell_width, self.y + self.height))
+            surface.blit(self.vLine, (self.x + j * self.cell_width, self.y))
             
         # Draw start and end points if set
         if hasattr(self, 'start'):
-            # Blue start point
-            startColor = (0, 0, 255)
-            pygame.draw.rect(surface, startColor, (self.x + self.start[1] * self.cell_width, self.y + self.start[0] * self.cell_height, self.cell_width, self.cell_height))
+            # Start point
+            surface.blit(self.startCell, (self.x + self.start[1] * self.cell_width, self.y + self.start[0] * self.cell_height))
             
         if hasattr(self, 'end'):
-            # Red end point
-            endColor = (255, 0, 0)
-            pygame.draw.rect(surface, endColor, (self.x + self.end[1] * self.cell_width, self.y + self.end[0] * self.cell_height, self.cell_width, self.cell_height))
+            # End point
+            surface.blit(self.endCell, (self.x + self.end[1] * self.cell_width, self.y + self.end[0] * self.cell_height))
 
     def handle_event(self, event: pygame.event.Event, buttons: Dict[str, Button]):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -202,8 +234,8 @@ class Grid:
             "algorithm": "A*",
             "rows": self.rows,
             "cols": self.cols,
-            "programmVersion": "v0.2",
-            "recentChanges": "Optimized color usage (pre-defined colors)",
+            "programmVersion": "v0.4",
+            "recentChanges": "Optimized main loop and capped FPS to 100, giving the logic more time to run before updating the screen.",
             "time": pathTime,
             "datetime": time.strftime("%Y-%m-%d %H:%M:%S")
         }
