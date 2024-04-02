@@ -1,4 +1,3 @@
-from typing import TypedDict, Dict
 import pygame
 
 from functools import partial       # Standard library function to create partial (pre-filled) functions
@@ -21,26 +20,18 @@ async def main():
     panel.fill((30, 30, 30))
 
     # Grid
-    pathingGrid = Grid(200, 0, 800, 800, 100, 100, screen)
+    pathingGrid = Grid(200, 0, 800, 800, 100, 100, screen)    
 
-    # Add all buttons to a dictionary (TypedDict for intellisense)
-    class ButtonDict(TypedDict):
-        reset: Button
-        setStart: Button
-        setEnd: Button
-        draw: Button
-        pathing: Button
-        cancel: Button
-
-    buttons: ButtonDict = {}
+    buttons = {}
 
     # Wrapper functions for button actions
-    reset_action_w = partial(buttonActions.reset_action, pathingGrid)
+    reset_action_w = partial(buttonActions.reset_action, buttons, pathingGrid)
     set_start_action_w = partial(buttonActions.set_start_action, buttons)
     set_end_action_w = partial(buttonActions.set_end_action, buttons)
     draw_action_w = partial(buttonActions.draw_action, buttons)
     pathing_action_w = partial(buttonActions.pathing_action, buttons, pathingGrid)
     cancel_action_w = partial(buttonActions.cancel_action, buttons, pathingGrid)
+    benchmark_action_w = partial(buttonActions.benchmark_action, buttons, pathingGrid)
 
     # Buttons
     resetButton = Button(10, 5, 180, 50, "Reset", reset_action_w)
@@ -49,6 +40,7 @@ async def main():
     drawButton = Button(10, 170, 180, 50, "Draw", draw_action_w, toggle=True)
     pathingButton = Button(10, 225, 180, 50, "Pathing", pathing_action_w)
     cancelPathingButton = Button(10, 280, 180, 50, "Cancel", cancel_action_w, visible=False)
+    benchmarkButton = Button(10, 335, 180, 50, "Benchmark", benchmark_action_w)
 
     # Add to dictionary
     buttons['reset'] = resetButton
@@ -57,6 +49,7 @@ async def main():
     buttons['draw'] = drawButton
     buttons['pathing'] = pathingButton
     buttons['cancel'] = cancelPathingButton
+    buttons['benchmark'] = benchmarkButton
 
     # Main loop
     ############################
@@ -82,7 +75,8 @@ async def main():
         
         # Draw buttons
         for button in buttons.values():
-            button.draw(screen)
+            if button.visible:
+                button.draw(screen)
         
         pathingGrid.draw(screen)
         pygame.display.flip()

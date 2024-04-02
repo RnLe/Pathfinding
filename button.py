@@ -15,15 +15,22 @@ class Button:
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
         self.active = True
         self.visible = visible
+        self.updated = True
 
     def draw(self, surface: pygame.Surface) -> None:
-        # If a button is not visible, don't draw it
-        if not self.visible: return
+        # If a button is not visible, don't draw it (shifted to main.py for optimization)
+        # if not self.visible: return
+        # if not self.updated: return
+        
         # Set button color based on toggle state
         color = (100, 100, 100) if self.clicked else (200, 200, 200)
         if not self.active: color = (50, 50, 50)
         pygame.draw.rect(surface, color, self.rect)
         surface.blit(self.text_surf, self.text_rect)
+        
+        # If the button was drawn, set updated to False
+        self.updated = False
+        
 
     def handle_event(self, event: pygame.event.Event) -> None:
         # If a button is not visible or active, don't handle events
@@ -32,5 +39,7 @@ class Button:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 if self.onClick:
-                    if self.toggle: self.clicked = not self.clicked
+                    if self.toggle:
+                        self.clicked = not self.clicked
+                        self.updated = True
                     self.onClick()

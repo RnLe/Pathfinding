@@ -2,6 +2,7 @@ from typing import Callable, Optional, Dict
 import pygame
 
 import time
+import json
 
 from button import Button
 
@@ -21,6 +22,8 @@ class Grid:
         self.cell_height = height // rows
         self.cells = [[0 for _ in range(cols)] for _ in range(rows)]
         self.cancelled = False
+        self.benchmark = False
+        self.benchmarkLevel = ""
         
         self.screen = screen
         
@@ -31,19 +34,12 @@ class Grid:
         self.end = pos
 
     def draw(self, surface):
+        # pre-defined colors for the grid cells
+        # 0: white (empty cell), 1: black (wall cell), 2: green (path cell), 3: yellow (checked cell)
+        colors = ((255, 255, 255), (0, 0, 0), (0, 255, 0), (255, 255, 0))
         for i in range(self.rows):
             for j in range(self.cols):
-                color = (255, 255, 255)
-                if self.cells[i][j] == 1:
-                    # Empty cell
-                    color = (0, 0, 0)
-                elif self.cells[i][j] == 2:
-                    # Path cell (green)
-                    color = (0, 255, 0)
-                elif self.cells[i][j] == 3:
-                    # Checked cell (yellow)
-                    color = (255, 255, 0)
-                pygame.draw.rect(surface, color, (self.x + j * self.cell_width, self.y + i * self.cell_height, self.cell_width, self.cell_height))
+                pygame.draw.rect(surface, colors[self.cells[i][j]], (self.x + j * self.cell_width, self.y + i * self.cell_height, self.cell_width, self.cell_height))
         # Draw fine grid lines for the grid
         for i in range(self.rows + 1):
             pygame.draw.line(surface, (200, 200, 200), (self.x, self.y + i * self.cell_height), (self.x + self.width, self.y + i * self.cell_height))
@@ -108,8 +104,12 @@ class Grid:
             
             if current == self.end:
                 self.reconstruct_path(parents, self.end)
-                print(f"Time: {(time.time() - start_time)*1000} ms")
+                pathTime = (time.time() - start_time)*1000
+                print(f"Time: {pathTime} ms")
                 print("Pfad gefunden")
+                if self.benchmark:
+                    self.benchmark = False
+                    self.saveBenchmark(pathTime)
                 return
 
             open_list.remove(current)
@@ -183,5 +183,30 @@ class Grid:
         for node in path:
             self.cells[node[0]][node[1]] = 2
             
-    
-                
+    def create_benchmark_level(self):
+        # Version 1. Add more benchmark levels later
+        # Start at the top left corner, end at the bottom right corner, and a diagonal line perpendicularly in the middle, excluding the top right and bottom left corners
+        self.start = (0, 0)
+        self.end = (self.rows - 1, self.cols - 1)
+        
+        # IMPORTANT: !ASSUMING A SQUARE GRID!
+        for i in range(self.rows - 1):
+            self.cells[i][self.rows - i - 1] = 1
+            
+        self.benchmarkLevel = "v000"
+            
+    def saveBenchmark(self, pathTime: float):
+        # Save the benchmark level, datetime and time to a JSON file
+        data = {
+            "level": self.benchmarkLevel,
+            "algorithm": "A*",
+            "rows": self.rows,
+            "cols": self.cols,
+            "programmVersion": "v0.2",
+            "recentChanges": "Optimized color usage (pre-defined colors)",
+            "time": pathTime,
+            "datetime": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        with open("benchmarking/benchmark.json", "a") as f:
+            f.write(json.dumps(data) + "\n")
