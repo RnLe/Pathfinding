@@ -1,1 +1,2 @@
 LOGGING = True
+SAVE_BENCHMARKS = False

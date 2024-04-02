@@ -5,10 +5,13 @@ import time
 import json
 
 from button import Button
+import config
 
 import asyncio
+import random
 
-# TODO: Optimize drawing of grid cells and remove redundancies (e.g. draw grid lines only once)
+# Constants
+cellTypes = {"empty": 0, "wall": 1, "path": 2, "checked": 3, "start": 4, "end": 5, "tree": 11, "rocks": 12}
 
 class Grid:
     def __init__(self, x, y, width, height, rows, cols, screen, start=None, end=None):
@@ -52,6 +55,16 @@ class Grid:
         self.vLine = pygame.Surface((1, self.height))
         self.vLine.fill((200, 200, 200))
         
+        # Load images
+        self.tree_image = pygame.image.load('sprites/tree_spruce.png').convert_alpha()
+        self.rocks_image = pygame.image.load('sprites/rocks.png').convert_alpha()
+        # Get size of the image
+        self.tree_size = self.tree_image.get_size()
+        self.rocks_size = self.rocks_image.get_size()
+        # Scale the image to the cell size + 10% padding
+        self.tree_image = pygame.transform.scale(self.tree_image, (int(self.cell_width * 1.1), int(self.cell_height * 1.1)))
+        self.rocks_image = pygame.transform.scale(self.rocks_image, (int(self.cell_width * 1.1), int(self.cell_height * 1.1)))
+        
     def set_start(self, pos):
         self.start = pos
     
@@ -65,13 +78,15 @@ class Grid:
                 # Determine position of cell
                 cell_position = (j * self.cell_width, i * self.cell_height)
                 
-                if self.cells[i][j] == 0:
+                if self.cells[i][j] == cellTypes["empty"]:
                     surface.blit(self.emptyCell, (self.x + cell_position[0], self.y + cell_position[1]))
-                elif self.cells[i][j] == 1:
-                    surface.blit(self.wallCell, (self.x + cell_position[0], self.y + cell_position[1]))
-                elif self.cells[i][j] == 2:
+                elif self.cells[i][j] == cellTypes["tree"]:
+                    surface.blit(self.rocks_image, (self.x + cell_position[0], self.y + cell_position[1]))
+                elif self.cells[i][j] == cellTypes["rocks"]:
+                    surface.blit(self.tree_image, (self.x + cell_position[0], self.y + cell_position[1]))
+                elif self.cells[i][j] == cellTypes["path"]:
                     surface.blit(self.pathCell, (self.x + cell_position[0], self.y + cell_position[1]))
-                elif self.cells[i][j] == 3:
+                elif self.cells[i][j] == cellTypes["checked"]:
                     surface.blit(self.checkedCell, (self.x + cell_position[0], self.y + cell_position[1]))
                 
         # Draw fine grid lines for the grid
@@ -105,17 +120,19 @@ class Grid:
                     self.set_end((i, j))
                     buttons['setEnd'].clicked = False
             elif buttons['draw'].clicked:
-                self.draw_cell(event.pos, True)
+                self.draw_cell(event.pos)
         # Check whether the mouse is moving while the left mouse button is pressed
         elif event.type == pygame.MOUSEMOTION and pygame.mouse.get_pressed()[0] and buttons['draw'].clicked:
             # Draw the cell under the mouse cursor
-            self.draw_cell(event.pos, True)
+            self.draw_cell(event.pos)
             
-    def draw_cell(self, pos:int, state:bool):
+    def draw_cell(self, pos:int):
         i = (pos[1] - self.y) // self.cell_height
         j = (pos[0] - self.x) // self.cell_width
         if 0 <= i < self.rows and 0 <= j < self.cols:
-            self.cells[i][j] = state
+            # Randomly set either a tree or rocks, if cell is empty
+            if self.cells[i][j] == cellTypes["empty"]:
+                self.cells[i][j] = cellTypes["tree"] if random.random() < 0.5 else cellTypes["rocks"]
             
     def heuristic(self, node, end):
         # Heuristik: Manhattandistanz zum Endknoten
@@ -141,13 +158,15 @@ class Grid:
                 print("Pfad gefunden")
                 if self.benchmark:
                     self.benchmark = False
-                    self.saveBenchmark(pathTime)
+                    if config.SAVE_BENCHMARKS:
+                        self.saveBenchmark(pathTime)
                 return
 
             open_list.remove(current)
             closed_list.add(current)
-            # Set cell to checked
-            self.cells[current[0]][current[1]] = 3
+            # Set cell to checked if it is empty
+            if self.cells[current[0]][current[1]] == cellTypes["empty"]:
+                self.cells[current[0]][current[1]] = cellTypes["checked"]
 
             for neighbor in self.get_neighbors(current):
                 if neighbor in closed_list:
@@ -211,6 +230,8 @@ class Grid:
 
     
     def draw_path(self, path):
+        # Drop the start and end points
+        path = path[1:-1]
         # Draw path by
         for node in path:
             self.cells[node[0]][node[1]] = 2
@@ -223,7 +244,7 @@ class Grid:
         
         # IMPORTANT: !ASSUMING A SQUARE GRID!
         for i in range(self.rows - 1):
-            self.cells[i][self.rows - i - 1] = 1
+            self.cells[i][self.rows - i - 1] = cellTypes["tree"] if random.random() < 0.5 else cellTypes["rocks"]
             
         self.benchmarkLevel = "v000"
             

@@ -18,9 +18,13 @@ async def main():
     # GUI left panel
     panel = pygame.Surface((200, 800))
     panel.fill((30, 30, 30))
+    
+    # Settings
+    rows = 50
+    cols = 50
 
     # Grid
-    pathingGrid = Grid(200, 0, 800, 800, 100, 100, screen)    
+    pathingGrid = Grid(200, 0, 800, 800, rows, cols, screen)    
 
     buttons = {}
 
