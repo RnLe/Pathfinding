@@ -48,7 +48,7 @@ async def main():
     setEndButton = Button(10, 115, 180, 50, "Set End", set_end_action_w, toggle=True)
     drawButton = Button(10, 170, 180, 50, "Draw", draw_action_w, toggle=True)
     pathingButton = Button(10, 225, 180, 50, "Pathing", pathing_action_w)
-    cancelPathingButton = Button(10, 280, 180, 50, "Cancel", cancel_action_w)
+    cancelPathingButton = Button(10, 280, 180, 50, "Cancel", cancel_action_w, visible=False)
 
     # Add to dictionary
     buttons['reset'] = resetButton
