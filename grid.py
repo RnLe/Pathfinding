@@ -3,6 +3,7 @@ import pygame
 
 import time
 import json
+from math import sqrt
 
 from button import Button
 import config
@@ -170,13 +171,14 @@ class Grid:
             if self.cells[current[0]][current[1]] == cellTypes["empty"]:
                 self.cells[current[0]][current[1]] = cellTypes["checked"]
 
-            for neighbor in self.get_neighbors(current):
+            neighbors, costs = self.get_neighbors(current)
+            for neighbor in neighbors:
                 if neighbor in closed_list:
                     continue
                 if neighbor not in open_list:
                     open_list.add(neighbor)
 
-                tentative_g_score = g[current] + 1  # Assuming each step costs 1
+                tentative_g_score = g[current] + costs[neighbor]  # Assuming each step costs 1
                 if tentative_g_score >= g.get(neighbor, float('inf')):
                     continue
 
@@ -227,11 +229,12 @@ class Grid:
             if self.cells[current[0]][current[1]] == cellTypes["empty"]:
                 self.cells[current[0]][current[1]] = cellTypes["checked"]
 
-            for neighbor in self.get_neighbors(current):
+            neighbors, costs = self.get_neighbors(current)
+            for neighbor in neighbors:
                 if neighbor in closed_list:
                     continue
 
-                tentative_g_score = g[current] + 1  # Kosten für den Schritt, typischerweise 1 in einem Raster
+                tentative_g_score = g[current] + costs[neighbor]  # Kosten für den Schritt, typischerweise 1 in einem Raster
 
                 if neighbor not in open_list:
                     open_list.add(neighbor)
@@ -278,7 +281,8 @@ class Grid:
                         self.saveBenchmark(pathTime)
                 return
 
-            for neighbor in self.get_neighbors(current):
+            neighbors, costs = self.get_neighbors(current, diagonals=False)
+            for neighbor in neighbors:
                 if neighbor not in visited:
                     queue.append(neighbor)
                     visited.add(neighbor)
@@ -321,7 +325,8 @@ class Grid:
                         self.saveBenchmark(pathTime)
                 return
 
-            for neighbor in self.get_neighbors(current):
+            neighbors, costs = self.get_neighbors(current, diagonals=False)
+            for neighbor in neighbors:
                 if neighbor not in visited:
                     stack.append(neighbor)  # Füge den Nachbarn zum Stapel hinzu
                     visited.add(neighbor)
@@ -350,10 +355,10 @@ class Grid:
         path.reverse()  # optional
         self.draw_path(path)
         print(f"Lenght of the path: {len(path)}")
-        
 
-    def get_neighbors(self, node):
+    def get_neighbors(self, node, diagonals=True):
         neighbors = []
+        costs = {}
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if i == 0 and j == 0:
@@ -363,16 +368,19 @@ class Grid:
                 if 0 <= new_row < self.rows and 0 <= new_col < self.cols:
                     # Check if cell is empty (or checked)
                     if self.cells[new_row][new_col] == cellTypes["empty"] or self.cells[new_row][new_col] == cellTypes["checked"]:
-                        # Always add orthogonal neighbors
+                        # Always add orthogonal neighbors with cost of 1
                         if i == 0 or j == 0:
                             neighbors.append((new_row, new_col))
-                        else:
+                            costs[(new_row, new_col)] = 1
+                        elif diagonals:
                             # For diagonal neighbors, check if the orthogonal neighbors are empty
+                            # Diagonal neighbors get a cost of sqrt(2)
                             adj_1 = self.cells[node[0] + i][node[1]]
                             adj_2 = self.cells[node[0]][node[1] + j]
                             if adj_1 == cellTypes["empty"] or adj_2 == cellTypes["empty"] or adj_1 == cellTypes["checked"] or adj_2 == cellTypes["checked"]:
                                 neighbors.append((new_row, new_col))
-        return neighbors
+                            costs[(new_row, new_col)] = sqrt(2)
+        return neighbors, costs
 
     
     def draw_path(self, path):
