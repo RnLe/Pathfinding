@@ -1,2 +1,3 @@
 LOGGING = True
 SAVE_BENCHMARKS = False
+FPS = 100

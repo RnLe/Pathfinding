@@ -12,6 +12,7 @@ import random
 
 # Constants
 cellTypes = {"empty": 0, "wall": 1, "path": 2, "checked": 3, "start": 4, "end": 5, "tree": 11, "rocks": 12}
+algorithms = {"A*": 0, "Dijkstra": 1, "BFS": 2, "DFS": 3}
 
 class Grid:
     def __init__(self, x, y, width, height, rows, cols, screen, start=None, end=None):
@@ -27,6 +28,7 @@ class Grid:
         self.cancelled = False
         self.benchmark = False
         self.benchmarkLevel = ""
+        self.algorithm = algorithms["A*"]
         
         self.screen = screen
         
@@ -138,7 +140,7 @@ class Grid:
         # Heuristik: Manhattandistanz zum Endknoten
         return abs(node[0] - end[0]) + abs(node[1] - end[1])
             
-    async def find_path(self):
+    async def find_path_Astar(self):
         # Start timer
         start_time = time.time()
         
@@ -192,6 +194,148 @@ class Grid:
         print("Kein Pfad gefunden")
         print(f"Time: {(time.time() - start_time)*1000} ms")
         
+    async def find_path_Dijkstra(self):
+        # Start timer
+        start_time = time.time()
+
+        open_list = set([self.start])
+        closed_list = set()
+
+        # Kosten vom Startknoten zu einem Knoten
+        g = {self.start: 0}
+        parents = {self.start: self.start}
+
+        while open_list and not self.cancelled:
+            # Wähle den Knoten mit den geringsten Kosten
+            current = min(open_list, key=lambda x: g[x])
+
+            if current == self.end:
+                self.reconstruct_path(parents, self.end)
+                pathTime = (time.time() - start_time) * 1000
+                print(f"Time: {pathTime} ms")
+                print("Pfad gefunden")
+                if self.benchmark:
+                    self.benchmark = False
+                    if config.SAVE_BENCHMARKS:
+                        self.saveBenchmark(pathTime)
+                return
+
+            open_list.remove(current)
+            closed_list.add(current)
+            
+            # Set cell to checked if it is empty
+            if self.cells[current[0]][current[1]] == cellTypes["empty"]:
+                self.cells[current[0]][current[1]] = cellTypes["checked"]
+
+            for neighbor in self.get_neighbors(current):
+                if neighbor in closed_list:
+                    continue
+
+                tentative_g_score = g[current] + 1  # Kosten für den Schritt, typischerweise 1 in einem Raster
+
+                if neighbor not in open_list:
+                    open_list.add(neighbor)
+                elif tentative_g_score >= g.get(neighbor, float('inf')):
+                    continue  # Dieser neue Pfad ist nicht besser als der vorhandene
+
+                # Dieser Pfad ist der beste bisher, speichere ihn
+                parents[neighbor] = current
+                g[neighbor] = tentative_g_score
+
+            await asyncio.sleep(0)
+
+            if self.cancelled:
+                print("Pathfinding abgebrochen.")
+                return
+
+        print("Kein Pfad gefunden")
+        print(f"Time: {(time.time() - start_time) * 1000} ms")
+    
+    async def find_path_BFS(self):
+        # Start timer
+        start_time = time.time()
+
+        # Initialisiere eine Warteschlange mit dem Startknoten
+        queue = [self.start]
+        visited = set([self.start])
+
+        parents = {self.start: self.start}
+
+        while queue and not self.cancelled:
+            current = queue.pop(0)
+            # Set cell to checked if it is empty
+            if self.cells[current[0]][current[1]] == cellTypes["empty"]:
+                self.cells[current[0]][current[1]] = cellTypes["checked"]
+
+            if current == self.end:
+                self.reconstruct_path(parents, self.end)
+                pathTime = (time.time() - start_time) * 1000
+                print(f"Time: {pathTime} ms")
+                print("Path found!")
+                if self.benchmark:
+                    self.benchmark = False
+                    if config.SAVE_BENCHMARKS:
+                        self.saveBenchmark(pathTime)
+                return
+
+            for neighbor in self.get_neighbors(current):
+                if neighbor not in visited:
+                    queue.append(neighbor)
+                    visited.add(neighbor)
+                    parents[neighbor] = current
+
+            await asyncio.sleep(0)
+
+            if self.cancelled:
+                print("Pathfinding cancelled")
+                return
+
+        print("No path found")
+        print(f"Time: {(time.time() - start_time) * 1000} ms")
+    
+    async def find_path_DFS(self):
+        # Start timer
+        start_time = time.time()
+
+        # Initialisiere einen Stapel mit dem Startknoten
+        stack = [self.start]
+        visited = set([self.start])
+
+        parents = {self.start: self.start}
+
+        while stack and not self.cancelled:
+            current = stack.pop()  # Letzten Knoten vom Stapel nehmen
+
+            # Zelle als untersucht markieren, wenn sie leer ist
+            if self.cells[current[0]][current[1]] == cellTypes["empty"]:
+                self.cells[current[0]][current[1]] = cellTypes["checked"]
+
+            if current == self.end:
+                self.reconstruct_path(parents, self.end)
+                pathTime = (time.time() - start_time) * 1000
+                print(f"Time: {pathTime} ms")
+                print("Pfad gefunden")
+                if self.benchmark:
+                    self.benchmark = False
+                    if config.SAVE_BENCHMARKS:
+                        self.saveBenchmark(pathTime)
+                return
+
+            for neighbor in self.get_neighbors(current):
+                if neighbor not in visited:
+                    stack.append(neighbor)  # Füge den Nachbarn zum Stapel hinzu
+                    visited.add(neighbor)
+                    parents[neighbor] = current
+
+            await asyncio.sleep(0)
+
+            if self.cancelled:
+                print("Pathfinding abgebrochen.")
+                return
+
+        print("Kein Pfad gefunden")
+        print(f"Time: {(time.time() - start_time) * 1000} ms")
+        
         
     def cancel_pathfinding(self):
         self.cancelled = True
@@ -205,6 +349,8 @@ class Grid:
         path.append(self.start)  # optional
         path.reverse()  # optional
         self.draw_path(path)
+        print(f"Lenght of the path: {len(path)}")
+        
 
     def get_neighbors(self, node):
         neighbors = []
@@ -215,8 +361,8 @@ class Grid:
                 new_row, new_col = node[0] + i, node[1] + j
                 # Check grid boundaries
                 if 0 <= new_row < self.rows and 0 <= new_col < self.cols:
-                    
-                    if self.cells[new_row][new_col] == 0:
+                    # Check if cell is empty (or checked)
+                    if self.cells[new_row][new_col] == cellTypes["empty"] or self.cells[new_row][new_col] == cellTypes["checked"]:
                         # Always add orthogonal neighbors
                         if i == 0 or j == 0:
                             neighbors.append((new_row, new_col))
@@ -224,7 +370,7 @@ class Grid:
                             # For diagonal neighbors, check if the orthogonal neighbors are empty
                             adj_1 = self.cells[node[0] + i][node[1]]
                             adj_2 = self.cells[node[0]][node[1] + j]
-                            if adj_1 == 0 and adj_2 == 0:
+                            if adj_1 == cellTypes["empty"] or adj_2 == cellTypes["empty"] or adj_1 == cellTypes["checked"] or adj_2 == cellTypes["checked"]:
                                 neighbors.append((new_row, new_col))
         return neighbors
 
@@ -252,9 +398,10 @@ class Grid:
         # Save the benchmark level, datetime and time to a JSON file
         data = {
             "level": self.benchmarkLevel,
-            "algorithm": "A*",
+            "algorithm": next(key for key, value in algorithms.items() if value == self.algorithm),
             "rows": self.rows,
             "cols": self.cols,
+            "fps": config.FPS,
             "programmVersion": "v0.4",
             "recentChanges": "Optimized main loop and capped FPS to 100, giving the logic more time to run before updating the screen.",
             "time": pathTime,

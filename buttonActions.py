@@ -3,20 +3,24 @@ import pygame
 
 import config
 from button import Button
-from grid import Grid
+from grid import Grid, algorithms
 
 import asyncio
 
+# Helper function to reset all buttons except the one passed in (and the algorithm buttons)
+def reset_all_buttons(buttons: Dict[str, Button], exception: str):
+    for button_key, button in buttons.items():
+        if button_key != exception and not button_key.startswith('algorithm_'):
+            button.clicked = False
+            button.updated = True
+
 def reset_action(buttons: Dict[str, Button], pathingGrid: Grid):
     if config.LOGGING: print("Reset button clicked")
+    buttonName = 'reset'
     # Reset the grid
     pathingGrid.cells = [[0 for _ in range(pathingGrid.cols)] for _ in range(pathingGrid.rows)]
     
-    # Set all other buttons to not clicked using the list
-    for button in buttons.values():
-        if button != buttons['reset']:
-            button.clicked = False
-            button.updated = True
+    reset_all_buttons(buttons, buttonName)
             
     # Reset start and end points
     if hasattr(pathingGrid, 'start'): del pathingGrid.start
@@ -25,33 +29,25 @@ def reset_action(buttons: Dict[str, Button], pathingGrid: Grid):
     
 def set_start_action(buttons: Dict[str, Button]):
     if config.LOGGING: print("Set start button clicked")
+    buttonName = 'setStart'
     
-    # Set all other buttons to not clicked using the list
-    for button in buttons.values():
-        if button != buttons['setStart']:
-            button.clicked = False
-            button.updated = True
+    reset_all_buttons(buttons, buttonName)
     
 def set_end_action(buttons: Dict[str, Button]):
     if config.LOGGING: print("Set end button clicked")
+    buttonName = 'setEnd'
     
-    # Set all other buttons to not clicked using the list
-    for button in buttons.values():
-        if button != buttons['setEnd']:
-            button.clicked = False
-            button.updated = True
+    reset_all_buttons(buttons, buttonName)
     
 def draw_action(buttons: Dict[str, Button]):
     if config.LOGGING: print("Draw button clicked")
+    buttonName = 'draw'
     
-    # Set all other buttons to not clicked using the list
-    for button in buttons.values():
-        if button != buttons['draw']:
-            button.clicked = False
-            button.updated = True
+    reset_all_buttons(buttons, buttonName)
             
 def pathing_action(buttons: Dict[str, Button], pathingGrid: Grid):
     if config.LOGGING: print("Pathing button clicked")
+    buttonName = 'pathing'
     
     # Check if start and end points are set
     if not hasattr(pathingGrid, 'start') or not hasattr(pathingGrid, 'end'):
@@ -59,8 +55,8 @@ def pathing_action(buttons: Dict[str, Button], pathingGrid: Grid):
         return
     
     # Set all other buttons to not clicked using the list
-    for button in buttons.values():
-        if button != buttons['pathing']:
+    for button_key, button in buttons.items():
+        if button_key != buttonName and not button_key.startswith('algorithm_'):
             button.clicked = False
             button.active = False
             button.updated = True
@@ -69,14 +65,22 @@ def pathing_action(buttons: Dict[str, Button], pathingGrid: Grid):
     buttons['pathing'].active = False
     buttons['cancel'].visible = True
     
-    asyncio.create_task(pathingGrid.find_path())
+    if pathingGrid.algorithm == algorithms['A*']:
+        asyncio.create_task(pathingGrid.find_path_Astar())
+    elif pathingGrid.algorithm == algorithms['Dijkstra']:
+        asyncio.create_task(pathingGrid.find_path_Dijkstra())
+    elif pathingGrid.algorithm == algorithms['BFS']:
+        asyncio.create_task(pathingGrid.find_path_BFS())
+    elif pathingGrid.algorithm == algorithms['DFS']:
+        asyncio.create_task(pathingGrid.find_path_DFS())
     
 def cancel_action(buttons: Dict[str, Button], grid: Grid):
     if config.LOGGING: print("Cancel button clicked")
+    buttonName = 'cancel'
     
     # Set all other buttons to not clicked using the list
-    for button in buttons.values():
-        if button != buttons['cancel']:
+    for button_key, button in buttons.items():
+        if button_key != buttonName and not button_key.startswith('algorithm_'):
             button.clicked = False
             button.active = True
             button.updated = True
@@ -87,12 +91,9 @@ def cancel_action(buttons: Dict[str, Button], grid: Grid):
     
 def benchmark_action(buttons: Dict[str, Button], pathingGrid: Grid):
     if config.LOGGING: print("Benchmark button clicked")
+    buttonName = 'benchmark'
     
-    # Set all other buttons to not clicked using the list
-    for button in buttons.values():
-        if button != buttons['benchmark']:
-            button.clicked = False
-            button.updated = True
+    reset_all_buttons(buttons, buttonName)
             
     # Reset the grid
     reset_action(buttons, pathingGrid)
@@ -103,3 +104,20 @@ def benchmark_action(buttons: Dict[str, Button], pathingGrid: Grid):
     # Start the benchmark
     pathingGrid.benchmark = True
     pathing_action(buttons, pathingGrid)
+    
+def set_algorithm(buttons: Dict[str, Button], pathingGrid: Grid, algorithm: str):
+    working = buttons["cancel"].visible
+    
+    for button_key, button in buttons.items():
+        if button_key.startswith('algorithm_'):
+            if not working:
+                button.clicked = False
+                button.updated = True
+                
+    # TODO: Algorithm buttons should be disabled when pathing is in progress
+            
+    buttons[f'algorithm_{algorithm}'].clicked = True
+    
+    # Set the algorithm
+    pathingGrid.algorithm = algorithms[algorithm]
+    if config.LOGGING: print(f"Algorithm set to {algorithm}")

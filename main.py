@@ -20,8 +20,8 @@ async def main():
     panel.fill((30, 30, 30))
     
     # Settings
-    rows = 50
-    cols = 50
+    rows = 100
+    cols = 100
 
     # Grid
     pathingGrid = Grid(200, 0, 800, 800, rows, cols, screen)    
@@ -36,6 +36,11 @@ async def main():
     pathing_action_w = partial(buttonActions.pathing_action, buttons, pathingGrid)
     cancel_action_w = partial(buttonActions.cancel_action, buttons, pathingGrid)
     benchmark_action_w = partial(buttonActions.benchmark_action, buttons, pathingGrid)
+    # Algorithm buttons (names must match dictionary in grid.py)
+    aStar_action_w = partial(buttonActions.set_algorithm, buttons, pathingGrid, 'A*')
+    dijkstra_action_w = partial(buttonActions.set_algorithm, buttons, pathingGrid, 'Dijkstra')
+    breadthFirst_action_w = partial(buttonActions.set_algorithm, buttons, pathingGrid, 'BFS')
+    depthFirst_action_w = partial(buttonActions.set_algorithm, buttons, pathingGrid, 'DFS')    
 
     # Buttons
     resetButton = Button(10, 5, 180, 50, "Reset", reset_action_w)
@@ -45,6 +50,11 @@ async def main():
     pathingButton = Button(10, 225, 180, 50, "Pathing", pathing_action_w)
     cancelPathingButton = Button(10, 280, 180, 50, "Cancel", cancel_action_w, visible=False)
     benchmarkButton = Button(10, 335, 180, 50, "Benchmark", benchmark_action_w)
+    # 4 Smaller buttons with half width (same height) for the algorithms
+    aStarButton = Button(10, 390, 85, 50, "A*", aStar_action_w, toggle=True, clicked=True)
+    dijkstraButton = Button(105, 390, 85, 50, "Dijkstra", dijkstra_action_w, toggle=True)
+    breadthFirstButton = Button(10, 445, 85, 50, "BFS", breadthFirst_action_w, toggle=True)
+    depthFirstButton = Button(105, 445, 85, 50, "DFS", depthFirst_action_w, toggle=True)
 
     # Add to dictionary
     buttons['reset'] = resetButton
@@ -54,11 +64,16 @@ async def main():
     buttons['pathing'] = pathingButton
     buttons['cancel'] = cancelPathingButton
     buttons['benchmark'] = benchmarkButton
+    # Algorithm buttons need to start with "algorithm_"
+    buttons['algorithm_A*'] = aStarButton
+    buttons['algorithm_Dijkstra'] = dijkstraButton
+    buttons['algorithm_BFS'] = breadthFirstButton
+    buttons['algorithm_DFS'] = depthFirstButton
 
     # Main loop
     ############################
     running = True
-    fps = 100
+    fps = config.FPS
 
     while running:
         for event in pygame.event.get():
