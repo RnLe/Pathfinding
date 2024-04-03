@@ -37,10 +37,11 @@ async def main():
     cancel_action_w = partial(buttonActions.cancel_action, buttons, pathingGrid)
     benchmark_action_w = partial(buttonActions.benchmark_action, buttons, pathingGrid)
     # Algorithm buttons (names must match dictionary in grid.py)
-    aStar_action_w = partial(buttonActions.set_algorithm, buttons, pathingGrid, 'A*')
-    dijkstra_action_w = partial(buttonActions.set_algorithm, buttons, pathingGrid, 'Dijkstra')
-    breadthFirst_action_w = partial(buttonActions.set_algorithm, buttons, pathingGrid, 'BFS')
-    depthFirst_action_w = partial(buttonActions.set_algorithm, buttons, pathingGrid, 'DFS')    
+    aStar_action_w = partial(buttonActions.set_algorithm_action, buttons, pathingGrid, 'A*')
+    dijkstra_action_w = partial(buttonActions.set_algorithm_action, buttons, pathingGrid, 'Dijkstra')
+    breadthFirst_action_w = partial(buttonActions.set_algorithm_action, buttons, pathingGrid, 'BFS')
+    depthFirst_action_w = partial(buttonActions.set_algorithm_action, buttons, pathingGrid, 'DFS')
+    create_maze_action_w = partial(buttonActions.create_maze_action, buttons, pathingGrid)
 
     # Buttons
     resetButton = Button(10, 5, 180, 50, "Reset", reset_action_w)
@@ -55,6 +56,7 @@ async def main():
     dijkstraButton = Button(105, 390, 85, 50, "Dijkstra", dijkstra_action_w, toggle=True)
     breadthFirstButton = Button(10, 445, 85, 50, "BFS", breadthFirst_action_w, toggle=True)
     depthFirstButton = Button(105, 445, 85, 50, "DFS", depthFirst_action_w, toggle=True)
+    createMazeButton = Button(10, 500, 180, 50, "Create Maze", create_maze_action_w)
 
     # Add to dictionary
     buttons['reset'] = resetButton
@@ -69,6 +71,8 @@ async def main():
     buttons['algorithm_Dijkstra'] = dijkstraButton
     buttons['algorithm_BFS'] = breadthFirstButton
     buttons['algorithm_DFS'] = depthFirstButton
+    
+    buttons['createMaze'] = createMazeButton
 
     # Main loop
     ############################

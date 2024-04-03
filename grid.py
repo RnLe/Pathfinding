@@ -11,6 +11,11 @@ import config
 import asyncio
 import random
 
+import sys
+sys.setrecursionlimit(100000)  # Setzt die maximale Rekursionstiefe auf 10000
+
+random.seed(42)
+
 # Constants
 cellTypes = {"empty": 0, "wall": 1, "path": 2, "checked": 3, "start": 4, "end": 5, "tree": 11, "rocks": 12}
 algorithms = {"A*": 0, "Dijkstra": 1, "BFS": 2, "DFS": 3}
@@ -150,6 +155,8 @@ class Grid:
 
         g = {self.start: 0}
         parents = {self.start: self.start}
+        
+        print(open_list, closed_list, g, parents)
 
         while len(open_list) > 0 and not self.cancelled:
             current = min(open_list, key=lambda x: g[x] + self.heuristic(x, self.end))
@@ -193,7 +200,7 @@ class Grid:
                 return
                 
 
-        print("Kein Pfad gefunden")
+        print("No path found")
         print(f"Time: {(time.time() - start_time)*1000} ms")
         
     async def find_path_Dijkstra(self):
@@ -418,3 +425,54 @@ class Grid:
         
         with open("benchmarking/benchmark.json", "a") as f:
             f.write(json.dumps(data) + "\n")
+    
+    def second_neighbors(self, node):
+        """Function to get the second neighbors of a node, counting only orthogonal, filled cells
+
+        Args:
+            node (tuple): Center node
+
+        Returns:
+            neighbors (list(tuple)): List of second neighbors
+        """        
+        neighbors = []
+        for i in range(-2, 3, 2):
+            for j in range(-2, 3, 2):
+                # Skip self and diagonals
+                if i == 0 and j == 0 or i != 0 and j != 0:
+                    continue
+                new_row, new_col = node[0] + i, node[1] + j
+                # Check grid boundaries
+                if 0 <= new_row < self.rows and 0 <= new_col < self.cols:
+                    # Check if cell is not empty
+                    if self.cells[new_row][new_col] == cellTypes["tree"]:
+                        neighbors.append((new_row, new_col))
+        return neighbors
+            
+    def create_maze(self):
+        # Create a maze using the recursive backtracking algorithm
+        # Start with a grid full of walls
+        # There are no "walls", just empty of filled cells
+        self.cells = [[cellTypes["tree"] for _ in range(self.cols)] for _ in range(self.rows)]
+        # Start at the top left corner
+        start = (1, 1)
+        self.start = start
+        self.end = (self.rows - 1, self.cols - 1)
+        # Create the maze
+        self.recursive_backtracking(start)
+
+    def recursive_backtracking(self, current):
+        # Set the current cell to empty
+        self.cells[current[0]][current[1]] = cellTypes["empty"]
+        # Get the neighbors of the current cell
+        neighbors = self.second_neighbors(current)
+        # Randomize the order of the neighbors
+        random.shuffle(neighbors)
+        for neighbor in neighbors:
+            if self.cells[neighbor[0]][neighbor[1]] == cellTypes["tree"]:
+                # Get the cell in between the current and the neighbor
+                between = ((current[0] + neighbor[0]) // 2, (current[1] + neighbor[1]) // 2)
+                # Set the cell in between to empty
+                self.cells[between[0]][between[1]] = cellTypes["empty"]
+                # Recursively call the function with the neighbor as the current cell
+                self.recursive_backtracking(neighbor)

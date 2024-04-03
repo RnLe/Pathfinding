@@ -3,7 +3,7 @@ import pygame
 
 import config
 from button import Button
-from grid import Grid, algorithms
+from grid import Grid, algorithms, cellTypes
 
 import asyncio
 
@@ -17,15 +17,27 @@ def reset_all_buttons(buttons: Dict[str, Button], exception: str):
 def reset_action(buttons: Dict[str, Button], pathingGrid: Grid):
     if config.LOGGING: print("Reset button clicked")
     buttonName = 'reset'
-    # Reset the grid
-    pathingGrid.cells = [[0 for _ in range(pathingGrid.cols)] for _ in range(pathingGrid.rows)]
     
     reset_all_buttons(buttons, buttonName)
+    
+    pathingGrid.cancelled = False
+    
+    # If clicked for the first time, reset only checked and path cells; keep walls and start/end points
+    if not buttons[buttonName].clicked:
+        for row in range(pathingGrid.rows):
+            for col in range(pathingGrid.cols):
+                if pathingGrid.cells[row][col] == cellTypes["checked"] or pathingGrid.cells[row][col] == cellTypes["path"]:
+                    pathingGrid.cells[row][col] = cellTypes["empty"]
+        buttons[buttonName].clicked = True
+        buttons[buttonName].updated = True
+        return
+    
+    # Else, reset the grid
+    pathingGrid.cells = [[0 for _ in range(pathingGrid.cols)] for _ in range(pathingGrid.rows)]
             
     # Reset start and end points
     if hasattr(pathingGrid, 'start'): del pathingGrid.start
     if hasattr(pathingGrid, 'end'): del pathingGrid.end
-    pathingGrid.cancelled = False
     
 def set_start_action(buttons: Dict[str, Button]):
     if config.LOGGING: print("Set start button clicked")
@@ -105,7 +117,7 @@ def benchmark_action(buttons: Dict[str, Button], pathingGrid: Grid):
     pathingGrid.benchmark = True
     pathing_action(buttons, pathingGrid)
     
-def set_algorithm(buttons: Dict[str, Button], pathingGrid: Grid, algorithm: str):
+def set_algorithm_action(buttons: Dict[str, Button], pathingGrid: Grid, algorithm: str):
     working = buttons["cancel"].visible
     
     for button_key, button in buttons.items():
@@ -121,3 +133,15 @@ def set_algorithm(buttons: Dict[str, Button], pathingGrid: Grid, algorithm: str)
     # Set the algorithm
     pathingGrid.algorithm = algorithms[algorithm]
     if config.LOGGING: print(f"Algorithm set to {algorithm}")
+    
+def create_maze_action(buttons: Dict[str, Button], pathingGrid: Grid):
+    if config.LOGGING: print("Create Maze button clicked")
+    buttonName = 'createMaze'
+    
+    reset_all_buttons(buttons, buttonName)
+    
+    # Reset the grid
+    reset_action(buttons, pathingGrid)
+    
+    # Create the maze
+    pathingGrid.create_maze()
