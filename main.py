@@ -20,8 +20,8 @@ async def main():
     panel.fill((30, 30, 30))
     
     # Settings
-    rows = 100
-    cols = 100
+    rows = 200
+    cols = 200
 
     # Grid
     pathingGrid = Grid(200, 0, 800, 800, rows, cols, screen)    
@@ -103,7 +103,13 @@ async def main():
                 button.draw(screen)
         
         pathingGrid.draw(screen)
-        pygame.display.flip()
+        # Update only updated parts of the screen
+        # Button panel
+        pygame.display.update(panel.get_rect())
+        # Grid
+        pygame.display.update(pathingGrid.updatedAreas)
+        pathingGrid.updatedAreas.clear()
+        
         await asyncio.sleep(1/fps)
 
     
