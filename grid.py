@@ -12,7 +12,7 @@ import asyncio
 import random
 
 import sys
-sys.setrecursionlimit(100000)  # Set new recursion limit
+sys.setrecursionlimit(100000)  # Setzt die maximale Rekursionstiefe auf 10000
 
 random.seed(42)
 
@@ -35,8 +35,6 @@ class Grid:
         self.benchmark = False
         self.benchmarkLevel = ""
         self.algorithm = algorithms["A*"]
-        self.rect = pygame.Rect(x, y, width, height)
-        self.updatedAreas = [self.rect]
         
         self.screen = screen
         
@@ -74,21 +72,12 @@ class Grid:
         # Scale the image to the cell size + 10% padding
         self.tree_image = pygame.transform.scale(self.tree_image, (int(self.cell_width * 1.1), int(self.cell_height * 1.1)))
         self.rocks_image = pygame.transform.scale(self.rocks_image, (int(self.cell_width * 1.1), int(self.cell_height * 1.1)))
-    
-    def get_cell_rect(self, pos):
-        # Pos is not the cursor position, but the position of the cell in the grid
-        i, j = pos
-        if 0 <= i < self.rows and 0 <= j < self.cols:
-            return pygame.Rect(self.x + j * self.cell_width, self.y + i * self.cell_height, self.cell_width, self.cell_height)
-        return None
         
     def set_start(self, pos):
         self.start = pos
-        self.updatedAreas.append(self.get_cell_rect(pos))
     
     def set_end(self, pos):
         self.end = pos
-        self.updatedAreas.append(self.get_cell_rect(pos))
 
     def draw(self, surface):
        
@@ -145,14 +134,13 @@ class Grid:
             # Draw the cell under the mouse cursor
             self.draw_cell(event.pos)
             
-    def draw_cell(self, pos):
+    def draw_cell(self, pos:int):
         i = (pos[1] - self.y) // self.cell_height
         j = (pos[0] - self.x) // self.cell_width
         if 0 <= i < self.rows and 0 <= j < self.cols:
             # Randomly set either a tree or rocks, if cell is empty
             if self.cells[i][j] == cellTypes["empty"]:
                 self.cells[i][j] = cellTypes["tree"] if random.random() < 0.5 else cellTypes["rocks"]
-                self.updatedAreas.append(self.get_cell_rect(pos))
             
     def heuristic(self, node, end):
         # Heuristik: Manhattandistanz zum Endknoten
@@ -189,7 +177,6 @@ class Grid:
             # Set cell to checked if it is empty
             if self.cells[current[0]][current[1]] == cellTypes["empty"]:
                 self.cells[current[0]][current[1]] = cellTypes["checked"]
-                self.updatedAreas.append(self.get_cell_rect(current))
 
             neighbors, costs = self.get_neighbors(current)
             for neighbor in neighbors:
@@ -408,8 +395,7 @@ class Grid:
         path = path[1:-1]
         # Draw path by
         for node in path:
-            self.cells[node[0]][node[1]] = cellTypes["path"]
-            self.updatedAreas.append(self.get_cell_rect(node))
+            self.cells[node[0]][node[1]] = 2
             
     def create_benchmark_level(self):
         # Version 1. Add more benchmark levels later
@@ -420,7 +406,6 @@ class Grid:
         # IMPORTANT: !ASSUMING A SQUARE GRID!
         for i in range(self.rows - 1):
             self.cells[i][self.rows - i - 1] = cellTypes["tree"] if random.random() < 0.5 else cellTypes["rocks"]
-            self.updatedAreas.append(pygame.Rect(self.x + (self.rows - i - 1) * self.cell_width, self.y + i * self.cell_height, self.cell_width, self.cell_height))
             
         self.benchmarkLevel = "v000"
             

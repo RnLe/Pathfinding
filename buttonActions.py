@@ -21,7 +21,6 @@ def reset_action(buttons: Dict[str, Button], pathingGrid: Grid):
     reset_all_buttons(buttons, buttonName)
     
     pathingGrid.cancelled = False
-    pathingGrid.updatedAreas = [pathingGrid.rect]
     
     # If clicked for the first time, reset only checked and path cells; keep walls and start/end points
     if not buttons[buttonName].clicked:
@@ -108,15 +107,11 @@ def benchmark_action(buttons: Dict[str, Button], pathingGrid: Grid):
     
     reset_all_buttons(buttons, buttonName)
             
-    # Reset the grid (2 times to clear everything)
-    reset_action(buttons, pathingGrid)
+    # Reset the grid
     reset_action(buttons, pathingGrid)
     
     # Set up the benchmark level
     pathingGrid.create_benchmark_level()
-    
-    # Update the whole grid
-    pathingGrid.updatedAreas = [pathingGrid.rect]
     
     # Start the benchmark
     pathingGrid.benchmark = True
@@ -150,6 +145,3 @@ def create_maze_action(buttons: Dict[str, Button], pathingGrid: Grid):
     
     # Create the maze
     pathingGrid.create_maze()
-    
-    # Set updated areas to the whole grid
-    pathingGrid.updatedAreas = [pathingGrid.rect]
