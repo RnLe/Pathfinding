@@ -152,7 +152,7 @@ class Grid:
             # Randomly set either a tree or rocks, if cell is empty
             if self.cells[i][j] == cellTypes["empty"]:
                 self.cells[i][j] = cellTypes["tree"] if random.random() < 0.5 else cellTypes["rocks"]
-                self.updatedAreas.append(self.get_cell_rect(pos))
+                self.updatedAreas.append(self.get_cell_rect((i, j)))
             
     def heuristic(self, node, end):
         # Heuristik: Manhattandistanz zum Endknoten
