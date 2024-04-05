@@ -47,12 +47,6 @@ while running:
                 scroll_y = -event.pos[1] / visible_items * len(menu_items)
                 scroll_y = min(scroll_y, 0)
                 scroll_y = max(scroll_y, -len(menu_items) * item_height + menu_height)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                # Klick auf Menüelement
-                item_index = (event.pos[1] - scroll_y) // item_height
-                if 0 <= item_index < len(menu_items):
-                    print("Klick auf", menu_items[item_index])
     
     # Bildschirm löschen
     screen.fill(WHITE)
