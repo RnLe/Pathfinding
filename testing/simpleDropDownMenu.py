@@ -1,11 +1,13 @@
 import pygame
 import sys
+import math
 
 pygame.init()
 
 # Bildschirmeinstellungen
 screen = pygame.display.set_mode((200, 140))
 pygame.display.set_caption("Dropdown-Menü Beispiel")
+clock = pygame.time.Clock()
 
 # Farben
 WHITE = (255, 255, 255)
@@ -20,9 +22,27 @@ item_height = 35
 menu_open = False
 main_button_rect = pygame.Rect(0, 0, 200, item_height)
 dropdown_rects = []
+animation_progress = 0  # 0: Pfeil nach unten, 1: Pfeil nach oben
 
 # Text für den Hauptbutton
-main_button_text = "Wähle eine Option"
+main_button_text = "Choose"
+
+def draw_arrow(surface, open_progress, rect):
+    # Pfeilkoordinaten berechnen
+    center_x = rect.right - 20
+    center_y = rect.centery
+    length = 10
+    # Winkel von 0 bis 90 Grad; + einem kleinen Offset, um die Linien zu trennen
+    angle = math.pi / 2 * open_progress + math.pi / 4
+
+    # Linien für den Pfeil
+    line1_start = (center_x - length * math.sin(angle), center_y - length * math.cos(angle))
+    line1_end = (center_x, center_y)
+    line2_start = (center_x + length * math.sin(angle), center_y - length * math.cos(angle))
+    line2_end = line1_end
+
+    pygame.draw.aaline(surface, BLACK, line1_start, line1_end, 1)
+    pygame.draw.aaline(surface, BLACK, line2_start, line2_end, 1)
 
 # Hauptschleife
 running = True
@@ -55,8 +75,21 @@ while running:
             text_surf = menu_font.render(item, True, BLACK)
             screen.blit(text_surf, (rect.x + 5, rect.y + 5))
             dropdown_rects.append(rect)
+            
+    # Animationsprogress aktualisieren
+    if menu_open and animation_progress < 1:
+        animation_progress += 0.1  # Geschwindigkeit der Animation anpassen
+    elif not menu_open and animation_progress > 0:
+        animation_progress -= 0.1
+
+    animation_progress = max(0, min(1, animation_progress))  # Zwischen 0 und 1 begrenzen
+    
+    # Pfeil zeichnen
+    draw_arrow(screen, animation_progress, main_button_rect)
 
     pygame.display.flip()
+    
+    clock.tick(60)
 
 pygame.quit()
 sys.exit()
