@@ -388,7 +388,22 @@ class Grid:
                             if adj_1 == cellTypes["empty"] or adj_2 == cellTypes["empty"] or adj_1 == cellTypes["checked"] or adj_2 == cellTypes["checked"]:
                                 neighbors.append((new_row, new_col))
                             costs[(new_row, new_col)] = sqrt(2)
-                            
+                    elif self.cells[new_row][new_col] == cellTypes["tree"] or self.cells[new_row][new_col] == cellTypes["rocks"]:
+                        # Add tree and rocks as neighbors, but with a higher cost
+                        # Always add orthogonal neighbors with multiplicative cost of 1
+                        if i == 0 or j == 0:
+                            neighbors.append((new_row, new_col))
+                            costs[(new_row, new_col)] = tileCosts["tree"] if self.cells[new_row][new_col] == cellTypes["tree"] else tileCosts["rocks"]
+                        elif diagonals:
+                            # For diagonal neighbors, check if the orthogonal neighbors are empty
+                            # Diagonal neighbors get a cost of sqrt(2)
+                            adj_1 = self.cells[node[0] + i][node[1]]
+                            adj_2 = self.cells[node[0]][node[1] + j]
+                            if adj_1 == cellTypes["empty"] or adj_2 == cellTypes["empty"] or adj_1 == cellTypes["checked"] or adj_2 == cellTypes["checked"]:
+                                neighbors.append((new_row, new_col))
+                            costs[(new_row, new_col)] = sqrt(2) * tileCosts["tree"] if self.cells[new_row][new_col] == cellTypes["tree"] else sqrt(2) * tileCosts["rocks"]
+                        
+                    
         return neighbors, costs
 
     
