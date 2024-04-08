@@ -76,6 +76,7 @@ def pathing_action(buttons: Dict[str, Button], pathingGrid: Grid):
     buttons['cancel'].active = True
     buttons['pathing'].active = False
     buttons['cancel'].visible = True
+    buttons['followPath'].active = True
     
     if pathingGrid.algorithm == algorithms['A*']:
         asyncio.create_task(pathingGrid.find_path_Astar())
@@ -145,3 +146,14 @@ def create_maze_action(buttons: Dict[str, Button], pathingGrid: Grid):
     
     # Create the maze
     pathingGrid.create_maze()
+    
+def follow_path_action(buttons: Dict[str, Button], pathingGrid: Grid):
+    if config.LOGGING: print("Follow Path button clicked")
+    buttonName = 'followPath'
+    
+    if not buttons["cancel"].visible:
+        print("No path constructed yet")
+        return
+    
+    # Follow the path
+    pathingGrid.follow_path()

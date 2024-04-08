@@ -4,7 +4,7 @@ import pygame
 import config
 
 class Button:
-    def __init__(self, x: int, y:int, width:int, height:int, text:str, onClick: Optional[Callable[[], None]] = None, toggle=False, visible: bool = True, clicked: bool = False) -> None:
+    def __init__(self, x: int, y:int, width:int, height:int, text:str, onClick: Optional[Callable[[], None]] = None, toggle=False, visible: bool = True, clicked: bool = False, active: bool = True) -> None:
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.onClick = onClick
@@ -13,7 +13,7 @@ class Button:
         self.text_surf = self.font.render(text, True, (255, 255, 255))
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
         self.clicked = clicked
-        self.active = True
+        self.active = active
         self.visible = visible
         self.updated = True
 

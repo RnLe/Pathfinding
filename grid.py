@@ -402,8 +402,7 @@ class Grid:
                             if adj_1 == cellTypes["empty"] or adj_2 == cellTypes["empty"] or adj_1 == cellTypes["checked"] or adj_2 == cellTypes["checked"]:
                                 neighbors.append((new_row, new_col))
                             costs[(new_row, new_col)] = sqrt(2) * tileCosts["tree"] if self.cells[new_row][new_col] == cellTypes["tree"] else sqrt(2) * tileCosts["rocks"]
-                        
-                    
+                          
         return neighbors, costs
 
     
@@ -493,3 +492,6 @@ class Grid:
                 self.cells[between[0]][between[1]] = cellTypes["empty"]
                 # Recursively call the function with the neighbor as the current cell
                 self.recursive_backtracking(neighbor)
+
+    def follow_path(self):
+        pass

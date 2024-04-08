@@ -41,7 +41,9 @@ async def main():
     dijkstra_action_w = partial(buttonActions.set_algorithm_action, buttons, pathingGrid, 'Dijkstra')
     breadthFirst_action_w = partial(buttonActions.set_algorithm_action, buttons, pathingGrid, 'BFS')
     depthFirst_action_w = partial(buttonActions.set_algorithm_action, buttons, pathingGrid, 'DFS')
+    
     create_maze_action_w = partial(buttonActions.create_maze_action, buttons, pathingGrid)
+    follow_path_action_w = partial(buttonActions.follow_path_action, buttons, pathingGrid)
 
     # Buttons
     resetButton = Button(10, 5, 180, 50, "Reset", reset_action_w)
@@ -56,7 +58,9 @@ async def main():
     dijkstraButton = Button(105, 390, 85, 50, "Dijkstra", dijkstra_action_w, toggle=True)
     breadthFirstButton = Button(10, 445, 85, 50, "BFS", breadthFirst_action_w, toggle=True)
     depthFirstButton = Button(105, 445, 85, 50, "DFS", depthFirst_action_w, toggle=True)
+    
     createMazeButton = Button(10, 500, 180, 50, "Create Maze", create_maze_action_w)
+    followPathButton = Button(10, 555, 180, 50, "Follow Path", follow_path_action_w, active=False)
 
     # Add to dictionary
     buttons['reset'] = resetButton
@@ -73,6 +77,7 @@ async def main():
     buttons['algorithm_DFS'] = depthFirstButton
     
     buttons['createMaze'] = createMazeButton
+    buttons['followPath'] = followPathButton
 
     # Main loop
     ############################
