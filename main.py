@@ -60,7 +60,7 @@ async def main():
     depthFirstButton = Button(105, 445, 85, 50, "DFS", depthFirst_action_w, toggle=True)
     
     createMazeButton = Button(10, 500, 180, 50, "Create Maze", create_maze_action_w)
-    followPathButton = Button(10, 555, 180, 50, "Follow Path", follow_path_action_w, active=False)
+    followPathButton = Button(10, 555, 180, 50, "Follow Path", follow_path_action_w)
 
     # Add to dictionary
     buttons['reset'] = resetButton

@@ -38,6 +38,7 @@ class Grid:
         self.algorithm = algorithms["A*"]
         
         self.screen = screen
+        self.pathFound = False
         
         # pre-defined colors for the grid cells
         # 0: white (empty cell), 1: black (wall cell), 2: green (path cell), 3: yellow (checked cell), 4: blue (start cell), 5: red (end cell)
@@ -171,6 +172,7 @@ class Grid:
                     self.benchmark = False
                     if config.SAVE_BENCHMARKS:
                         self.saveBenchmark(pathTime)
+                self.pathFound = True
                 return
 
             open_list.remove(current)
@@ -228,6 +230,7 @@ class Grid:
                     self.benchmark = False
                     if config.SAVE_BENCHMARKS:
                         self.saveBenchmark(pathTime)
+                self.pathFound = True
                 return
 
             open_list.remove(current)
@@ -287,6 +290,7 @@ class Grid:
                     self.benchmark = False
                     if config.SAVE_BENCHMARKS:
                         self.saveBenchmark(pathTime)
+                self.pathFound = True
                 return
 
             neighbors, costs = self.get_neighbors(current, diagonals=False)
@@ -331,6 +335,7 @@ class Grid:
                     self.benchmark = False
                     if config.SAVE_BENCHMARKS:
                         self.saveBenchmark(pathTime)
+                self.pathFound = True
                 return
 
             neighbors, costs = self.get_neighbors(current, diagonals=False)
@@ -494,4 +499,5 @@ class Grid:
                 self.recursive_backtracking(neighbor)
 
     def follow_path(self):
+        # TODO: Implement a function to follow/animate the path from the start to the end
         pass

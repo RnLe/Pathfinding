@@ -21,6 +21,7 @@ def reset_action(buttons: Dict[str, Button], pathingGrid: Grid):
     reset_all_buttons(buttons, buttonName)
     
     pathingGrid.cancelled = False
+    pathingGrid.pathFound = False
     
     # If clicked for the first time, reset only checked and path cells; keep walls and start/end points
     if not buttons[buttonName].clicked:
@@ -151,8 +152,8 @@ def follow_path_action(buttons: Dict[str, Button], pathingGrid: Grid):
     if config.LOGGING: print("Follow Path button clicked")
     buttonName = 'followPath'
     
-    if not buttons["cancel"].visible:
-        print("No path constructed yet")
+    if not pathingGrid.pathFound:
+        if config.LOGGING: print("No path found")
         return
     
     # Follow the path
