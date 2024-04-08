@@ -19,6 +19,7 @@ random.seed(42)
 # Constants
 cellTypes = {"empty": 0, "wall": 1, "path": 2, "checked": 3, "start": 4, "end": 5, "tree": 11, "rocks": 12}
 algorithms = {"A*": 0, "Dijkstra": 1, "BFS": 2, "DFS": 3}
+tileCosts = {"empty": 1, "tree": 10, "rocks": 100}
 
 class Grid:
     def __init__(self, x, y, width, height, rows, cols, screen, start=None, end=None):
@@ -387,6 +388,7 @@ class Grid:
                             if adj_1 == cellTypes["empty"] or adj_2 == cellTypes["empty"] or adj_1 == cellTypes["checked"] or adj_2 == cellTypes["checked"]:
                                 neighbors.append((new_row, new_col))
                             costs[(new_row, new_col)] = sqrt(2)
+                            
         return neighbors, costs
 
     
