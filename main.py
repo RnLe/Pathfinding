@@ -44,6 +44,8 @@ async def main():
     
     create_maze_action_w = partial(buttonActions.create_maze_action, buttons, pathingGrid)
     follow_path_action_w = partial(buttonActions.follow_path_action, buttons, pathingGrid)
+    
+    create_entity_action_w = partial(buttonActions.create_entity_action, buttons, pathingGrid)
 
     # Buttons
     resetButton = Button(10, 5, 180, 50, "Reset", reset_action_w)
@@ -61,6 +63,8 @@ async def main():
     
     createMazeButton = Button(10, 500, 180, 50, "Create Maze", create_maze_action_w)
     followPathButton = Button(10, 555, 180, 50, "Follow Path", follow_path_action_w)
+    
+    createEntityButton = Button(10, 610, 180, 50, "Create Entity", create_entity_action_w)
 
     # Add to dictionary
     buttons['reset'] = resetButton
@@ -78,6 +82,8 @@ async def main():
     
     buttons['createMaze'] = createMazeButton
     buttons['followPath'] = followPathButton
+    
+    buttons['createEntity'] = createEntityButton
 
     # Main loop
     ############################

@@ -158,3 +158,10 @@ def follow_path_action(buttons: Dict[str, Button], pathingGrid: Grid):
     
     # Follow the path
     pathingGrid.follow_path()
+    
+def create_entity_action(buttons: Dict[str, Button], pathingGrid: Grid):
+    if config.LOGGING: print("Create Entity button clicked")
+    buttonName = 'createEntity'
+    
+    # Create the entity
+    pathingGrid.create_entity()

@@ -501,3 +501,7 @@ class Grid:
     def follow_path(self):
         # TODO: Implement a function to follow/animate the path from the start to the end
         pass
+    
+    def create_entity(self):
+        # Create an entity object
+        pass
