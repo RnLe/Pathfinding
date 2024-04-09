@@ -113,6 +113,7 @@ async def main():
             if button.visible:
                 button.draw(screen)
         
+        # Draw grid
         pathingGrid.draw(screen)
         pygame.display.flip()
         await asyncio.sleep(1/fps)

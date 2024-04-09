@@ -6,6 +6,7 @@ import json
 from math import sqrt
 
 from button import Button
+from entity import Entity
 import config
 
 import asyncio
@@ -75,6 +76,8 @@ class Grid:
         self.tree_image = pygame.transform.scale(self.tree_image, (int(self.cell_width * 1.1), int(self.cell_height * 1.1)))
         self.rocks_image = pygame.transform.scale(self.rocks_image, (int(self.cell_width * 1.1), int(self.cell_height * 1.1)))
         
+        self.entities = []
+        
     def set_start(self, pos):
         self.start = pos
     
@@ -113,6 +116,8 @@ class Grid:
         if hasattr(self, 'end'):
             # End point
             surface.blit(self.endCell, (self.x + self.end[1] * self.cell_width, self.y + self.end[0] * self.cell_height))
+            
+        self.draw_entities(surface)
 
     def handle_event(self, event: pygame.event.Event, buttons: Dict[str, Button]):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -504,4 +509,22 @@ class Grid:
     
     def create_entity(self):
         # Create an entity object
-        pass
+        if config.MAX_NUMBER_OF_ENTITIES == len(self.entities):
+            print("Max number of entities reached.")
+            return
+        # Randomly select an emtpy cell
+        while True:
+            i = random.randint(0, self.rows - 1)
+            j = random.randint(0, self.cols - 1)
+            # Translate i,j into x,y coordinates
+            x = self.x + j * self.cell_width + self.cell_width // 2
+            y = self.y + i * self.cell_height + self.cell_height // 2
+            if self.cells[i][j] == cellTypes["empty"]:
+                break
+        # Create the entity
+        self.entities.append(Entity(x, y, self, (255, 0, 0), self.cell_width // 2 - 1))
+        if config.LOGGING: print(f"Entity created at {i}, {j}")
+    
+    def draw_entities(self, surface):
+        for entity in self.entities:
+            entity.draw(surface)
