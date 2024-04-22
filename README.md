@@ -20,3 +20,6 @@ In the end, this repository might even be helpful for those working on games, (m
 - Leveraging and learning about advanced Git(Hub) features
 
 I will state clearly if I entirely stop working on this repository.
+
+
+As of now, changes will come in on a rather weekly.
